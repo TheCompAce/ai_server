@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Server Test Page</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h1>AI Server Test Interface</h1>
+
+    <!-- Form to test /vision endpoint -->
+    <h2>Vision Endpoint Test</h2>
+    <form id="visionForm" enctype="multipart/form-data">
+        <input type="file" name="image" required>
+        <input type="text" name="text" placeholder="Enter prompt">
+        <button type="submit">Submit</button>
+    </form>
+    <div id="visionResult"></div>
+
+    <!-- Form to test /ask endpoint -->
+    <h2>Ask Endpoint Test</h2>
+    <form id="askForm">
+        <input type="text" name="system" placeholder="Enter system prompt" required>
+        <input type="text" name="user" placeholder="Enter user prompt" required>
+        <button type="submit">Ask</button>
+    </form>
+    <div id="askResult"></div>
+
+    <!-- Form to test /ask/json endpoint -->
+    <h2>Ask JSON Endpoint Test</h2>
+    <form id="askJSONForm">
+        <input type="text" name="system" placeholder="Enter system prompt" required>
+        <input type="text" name="user" placeholder="Enter user prompt" required>
+        <button type="submit">Ask JSON</button>
+    </form>
+    <div id="askJSONResult"></div>
+
+    <h2>Image Generation Endpoint Test</h2>
+    <form id="imageForm">
+        <input type="text" name="prompt" placeholder="Enter prompt for image generation" required>
+        <button type="submit">Generate Image</button>
+    </form>
+    <img id="generatedImage" src="" alt="Generated Image" style="max-width: 500px; display: none;">
+
+    <!-- Form to test /image/variation endpoint -->
+    <h2>Image Variation Endpoint Test</h2>
+    <form id="variationForm" enctype="multipart/form-data">
+        <input type="file" name="image" required>
+        <button type="submit">Create Variation</button>
+    </form>
+    <img id="variationResult" src="" alt="Image Variation" style="max-width: 500px; display: none;">
+
+
+    <!-- Form to test /image/detect endpoint -->
+    <h2>Object Detection Endpoint Test</h2>
+    <form id="detectForm" enctype="multipart/form-data">
+        <input type="file" name="image" required>
+        <button type="submit">Detect Objects</button>
+    </form>
+    <!-- Canvas for displaying image with bounding boxes -->
+    <canvas id="imageCanvas" style="border:1px solid #000; max-width: 100%; height: auto;"></canvas>
+
+    <div id="detectResult"></div>
+
+    <!-- Form to test /depth endpoint -->
+    <h2>Depth Estimation Endpoint Test</h2>
+    <form id="depthForm" enctype="multipart/form-data">
+        <input type="file" name="image" required>
+        <button type="submit">Estimate Depth</button>
+    </form>
+    <img id="depthImage" src="" alt="Depth Map" style="max-width: 500px; display: none;">
+
+    <!-- Form to test /image/sketch endpoint -->
+    <h2>Sketch Generation Endpoint Test</h2>
+    <form id="sketchForm" enctype="multipart/form-data">
+        <input type="file" name="image" required>
+        <input type="text" name="prompt" placeholder="Enter prompt for sketch generation">
+        <input type="text" name="negative_prompt" placeholder="Enter negative prompt for sketch generation">
+        <button type="submit">Generate Sketch</button>
+    </form>
+    <img id="sketchResult" src="" alt="Generated Sketch" style="max-width: 500px; display: none;">
+
+    
+    <!-- Form to test /speak endpoint -->
+    <h2>Speech Generation Endpoint Test</h2>
+    <form id="speakForm">
+        <input type="text" name="prompt" placeholder="Enter prompt for speech generation" required>
+        <button type="submit">Generate Speech</button>
+    </form>
+    <audio id="generatedSpeech" controls style="display: none;"></audio>
+
+    <!-- Form to test /hear endpoint -->
+    <h2>Speech-to-Text Endpoint Test</h2>
+    <form id="hearForm" enctype="multipart/form-data">
+        <input type="file" name="audio" required>
+        <button type="submit">Submit Audio</button>
+    </form>
+    <div id="hearResult"></div>
+
+    <!-- Form to test /music endpoint -->
+    <h2>Music Generation Endpoint Test</h2>
+    <form id="musicForm">
+        <input type="text" name="prompt" placeholder="Enter prompt for music generation" required>
+        <button type="submit">Generate Music</button>
+    </form>
+    <audio id="generatedMusic" controls style="display: none;"></audio>
+
+
+    <!-- Debug section for listing endpoints -->
+    <h2>Available Endpoints</h2>
+    <ul>
+        <li><a href="/">Home (Static files)</a></li>
+        <li><a href="/vision">Vision Endpoint</a> - POST</li>
+        <li><a href="/ask">Ask Endpoint</a> - POST</li>
+        <li><a href="/ask/json">Ask JSON Endpoint</a> - POST</li>
+        <li><a href="/image">Image Endpoint</a> - POST</li>
+        <li><a href="/image/variation">Image Variation Edpoint</a> - POST</li>
+        <li><a href="/image/detect">Image Sketch Edpoint</a> - POST</li>
+        <li><a href="/image/sketch">Object Detection Edpoint</a> - POST</li>        
+        <li><a href="/image/depth">Depth Endpoint</a> - POST</li>
+        <li><a href="/speak">Speak Endpoint</a> - POST</li>
+        <li><a href="/hear">Speach To Text Endpoint</a> - POST</li>
+        <li><a href="/music">Music Endpoint</a> - POST</li>
+    </ul>
+
+    <script>
+        document.getElementById('visionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/vision', {
+                method: 'POST',
+                body: formData // Do not set Content-Type header manually
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('visionResult').innerText = JSON.stringify(data);
+            });
+        });
+
+        document.getElementById('askJSONForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const system = this.system.value;
+            const user = this.user.value;
+
+            
+            fetch('/ask/json', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ system: system, user: user })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('askJSONResult').innerText = JSON.stringify(data);
+            });
+        });
+
+        document.getElementById('askForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const system = this.system.value;
+            const user = this.user.value;
+
+            
+            fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ system: system, user: user })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('askResult').innerText = JSON.stringify(data);
+            });
+        });
+
+        document.getElementById('imageForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const prompt = this.prompt.value;
+            
+            fetch('/image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `prompt=${encodeURIComponent(prompt)}`
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const imageUrl = URL.createObjectURL(blob);
+                document.getElementById('generatedImage').src = imageUrl;
+                document.getElementById('generatedImage').style.display = 'block';
+            });
+        });
+
+        document.getElementById('musicForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const prompt = this.prompt.value;
+            
+            fetch('/music', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `prompt=${encodeURIComponent(prompt)}`
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const musicUrl = URL.createObjectURL(blob);
+                const musicPlayer = document.getElementById('generatedMusic');
+                musicPlayer.src = musicUrl;
+                musicPlayer.style.display = 'block';
+            });
+        });
+
+        document.getElementById('speakForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const prompt = this.prompt.value;
+            
+            fetch('/speak', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `prompt=${encodeURIComponent(prompt)}`
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const speechUrl = URL.createObjectURL(blob);
+                const speechPlayer = document.getElementById('generatedSpeech');
+                speechPlayer.src = speechUrl;
+                speechPlayer.style.display = 'block';
+            });
+        });
+
+        document.getElementById('hearForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/hear', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('hearResult').innerText = JSON.stringify(data);
+            });
+        });
+
+        document.getElementById('depthForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/image/depth', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const depthUrl = URL.createObjectURL(blob);
+                document.getElementById('depthImage').src = depthUrl;
+                document.getElementById('depthImage').style.display = 'block';
+            });
+        });
+
+        // Function to draw bounding boxes and labels on the canvas
+        function drawBoundingBoxes(image, detections) {
+            const canvas = document.getElementById('imageCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = image.width;
+            canvas.height = image.height;
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+            detections.forEach(det => {
+                const [x, y, width, height] = det.box;
+                ctx.beginPath();
+                ctx.rect(x, y, width, height);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'red';
+                ctx.stroke();
+
+                ctx.fillStyle = 'red';
+                ctx.font = '16px Arial';
+                ctx.fillText(det.label, x, y - 5);
+            });
+        }
+
+        document.getElementById('detectForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/image/detect', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Read the uploaded image
+                const fileInput = document.querySelector('#detectForm input[type="file"]');
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        drawBoundingBoxes(img, data.detections);
+                    }
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        document.getElementById('variationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/image/variation', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const imageUrl = URL.createObjectURL(blob);
+                document.getElementById('variationResult').src = imageUrl;
+                document.getElementById('variationResult').style.display = 'block';
+            });
+        });
+
+        document.getElementById('sketchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/image/sketch', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const imageUrl = URL.createObjectURL(blob);
+                document.getElementById('sketchResult').src = imageUrl;
+                document.getElementById('sketchResult').style.display = 'block';
+            });
+        });
+
+    </script>
+</body>
+</html>

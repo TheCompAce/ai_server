@@ -1,0 +1,7 @@
+__pycache__
+check_images
+env
+generated_images
+moondream
+metavoice-src
+*.whl
