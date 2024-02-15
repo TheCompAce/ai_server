@@ -1,5 +1,5 @@
 
-# Project Name
+# AI Server
 
 A comprehensive AI service framework that integrates various AI functionalities, including image processing, speech-to-text, text-to-speech, and more, leveraging a Flask server as its backbone.
 
@@ -18,8 +18,8 @@ This project is a Flask-based server designed to handle multiple AI-related task
 
 1. **Clone the Repository**
    ```bash
-   git clone <repository-url>
-   cd <project-directory>
+   git clone https://github.com/TheCompAce/ai_server
+   cd ai_server
    ```
 
 2. **Install Dependencies**
