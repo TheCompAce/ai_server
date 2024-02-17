@@ -70,4 +70,8 @@ def speech_to_text(audio, settings = {}):
     return whisper.speech_to_text_whisper(audio)
     
 def ask_llm_embed(text, settings = {}):
-    return nomic.get_embeddings(text)
+    if (settings.get("use_nomic", True) == True):
+        return nomic.get_embeddings(text)
+    else:
+        return openai.create_embeddings(text)
+    

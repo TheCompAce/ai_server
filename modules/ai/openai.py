@@ -258,3 +258,31 @@ def vision_openai(image, prompt, settings):
         return response.json()["choices"][0]["message"]["content"]
     else:
         return f"Error calling OpenAI API: {response.text}", response.status_code
+    
+
+def create_embeddings(input_text, model_id="text-embedding-ada-002", encoding_format="float"):
+    openai_api_key = os.environ.get("OPENAI_API_KEY")
+    if not openai_api_key:
+        return "OpenAI API key not found", 400
+
+    url = "https://api.openai.com/v1/embeddings"
+    headers = {
+        "Authorization": f"Bearer {openai_api_key}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "input": input_text,
+        "model": model_id,
+        "encoding_format": encoding_format
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+
+    if response.status_code == 200:
+        # Extract just the embedding vector from the response
+        embedding_data = response.json()["data"]
+        # Assuming there's only one input and hence one embedding in the response
+        embedding_vector = embedding_data[0]["embedding"] if embedding_data else []
+        return embedding_vector
+    else:
+        return f"Error calling OpenAI API: {response.text}", response.status_code
