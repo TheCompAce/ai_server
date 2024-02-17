@@ -1,6 +1,6 @@
 from datetime import datetime
 import json
-from modules.ai_main import text_to_image, image_to_depth, detect_image, variation_image, sketch_image, music_generate, text_to_speech, ask_llm, get_vision, ask_llm_json, speech_to_text, ask_llm_embed
+from modules.ai_main import text_to_image, image_to_depth, detect_image, variation_image, sketch_image, music_generate, text_to_speech, ask_llm, get_vision, ask_llm_json, speech_to_text, ask_llm_embed, text_to_sound
 
 from PIL import Image
 from flask import Flask, request, jsonify, send_from_directory, send_file
@@ -111,6 +111,14 @@ def speak():
 
     return send_file(audio_io, mimetype='audio/mp3', as_attachment=True, download_name='generated_speech.mp3')
 
+@app.route('/sound', methods=['POST'])
+def sound_effect():
+    settings = get_settings()
+    text = request.form['prompt']
+    audio_io = text_to_sound(text, settings)
+
+    return send_file(audio_io, mimetype='audio/mp3', as_attachment=True, download_name='generated_sound.mp3')
+
 @app.route('/hear', methods=['POST'])
 def hear():
     settings = get_settings()
@@ -154,7 +162,7 @@ def depth():
 
     image_file = request.files['image']
     
-    depth_image = image_to_depth(image_file)
+    depth_image = image_to_depth(image_file, settings)
 
     # Convert depth_image to byte array
     img_io = io.BytesIO()
@@ -180,7 +188,7 @@ def image_detect():
 
     file = request.files['image']
 
-    detections = detect_image(file)
+    detections = detect_image(file, settings)
     return jsonify(detections)
 
 @app.route('/image/variation', methods=['POST'])

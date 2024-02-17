@@ -89,6 +89,13 @@
     </form>
     <img id="sketchResult" src="" alt="Generated Sketch" style="max-width: 500px; display: none;">
 
+    <!-- Form to test /sound endpoint -->
+    <h2>Sound Generation Endpoint Test</h2>
+    <form id="soundForm">
+        <input type="text" name="prompt" placeholder="Enter prompt for sound generation" required>
+        <button type="submit">Generate Sound</button>
+    </form>
+    <audio id="generatedSound" controls style="display: none;"></audio>
     
     <!-- Form to test /speak endpoint -->
     <h2>Speech Generation Endpoint Test</h2>
@@ -128,6 +135,7 @@
         <li><a href="/image/detect">Image Sketch Edpoint</a> - POST</li>
         <li><a href="/image/sketch">Object Detection Edpoint</a> - POST</li>        
         <li><a href="/image/depth">Depth Endpoint</a> - POST</li>
+        <li><a href="/sound">Sound Effect Endpoint</a> - POST</li>
         <li><a href="/speak">Speak Endpoint</a> - POST</li>
         <li><a href="/hear">Speach To Text Endpoint</a> - POST</li>
         <li><a href="/music">Music Endpoint</a> - POST</li>
@@ -365,6 +373,27 @@
                 document.getElementById('sketchResult').style.display = 'block';
             });
         });
+
+        document.getElementById('soundForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const prompt = this.prompt.value;
+            
+            fetch('/sound', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `prompt=${encodeURIComponent(prompt)}`
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const soundUrl = URL.createObjectURL(blob);
+                const soundPlayer = document.getElementById('generatedSound');
+                soundPlayer.src = soundUrl;
+                soundPlayer.style.display = 'block';
+            });
+        });
+
 
     </script>
 </body>
