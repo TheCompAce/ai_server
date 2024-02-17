@@ -17,7 +17,7 @@ from modules.ai import openai
 from modules.ai import proteus
 
 def text_to_image(prompt, settings):
-    if (settings.get("use_sdxl", False) == True):
+    if (settings.get("use_sdc", False) == True):
         return sdlx_turbo.text_to_image_sdxl(prompt)
     if (settings.get("use_sd15", False) == True):
         return sd15.text_to_image_sd15(prompt)
@@ -25,7 +25,7 @@ def text_to_image(prompt, settings):
         return sd_turbo.text_to_image_sd(prompt)
     elif (settings.get("use_proteus", False) == True):
         return proteus.text_to_image_proteus(prompt)
-    elif (settings.get("use_sdc", True) == True):
+    elif (settings.get("use_sdxl", True) == True):
         return sdc.text_to_image_sdc(prompt)    
     else:
         return openai.text_to_image_openai(prompt, settings)
