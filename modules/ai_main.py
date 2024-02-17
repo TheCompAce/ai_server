@@ -12,6 +12,7 @@ from modules.ai import speecht5_tts
 from modules.ai import tinyllama
 from modules.ai import moondream1
 from modules.ai import whisper
+from modules.ai import nomic
 from modules.ai import openai
 
 def text_to_image(prompt, settings):
@@ -68,3 +69,5 @@ def get_vision(image, prompt, settings = {}):
 def speech_to_text(audio, settings = {}):
     return whisper.speech_to_text_whisper(audio)
     
+def ask_llm_embed(text, settings = {}):
+    return nomic.get_embeddings(text)

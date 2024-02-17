@@ -1,6 +1,6 @@
 from datetime import datetime
 import json
-from modules.ai_main import text_to_image, image_to_depth, detect_image, variation_image, sketch_image, music_generate, text_to_speech, ask_llm, get_vision, ask_llm_json, speech_to_text
+from modules.ai_main import text_to_image, image_to_depth, detect_image, variation_image, sketch_image, music_generate, text_to_speech, ask_llm, get_vision, ask_llm_json, speech_to_text, ask_llm_embed
 
 from PIL import Image
 from flask import Flask, request, jsonify, send_from_directory, send_file
@@ -83,6 +83,16 @@ def ask_json():
     user = data.get('user', '')
 
     response = ask_llm_json(system, user, settings)
+    return jsonify({"response": response})
+
+# Endpoint to process a question for the LLM
+@app.route('/ask/embed', methods=['POST'])
+def ask_embed():
+    settings = get_settings()
+    data = request.json
+    text = data.get('text', '')
+
+    response = ask_llm_embed(text, settings)
     return jsonify({"response": response})
 
 @app.route('/music', methods=['POST'])
