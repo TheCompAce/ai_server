@@ -21,7 +21,8 @@ class Cache:
 
     def set(self, key, value, is_value_binary=False):
         hashed_key = self._hash_key(key)
-        self.cache[hashed_key] = {"value": value, "is_binary": is_value_binary}
+        serialized_value = base64.b64encode(pickle.dumps(value)).decode("utf-8") if is_value_binary else value
+        self.cache[hashed_key] = {"value": serialized_value, "is_binary": is_value_binary}
         self.save_to_database()
 
     def _hash_key(self, key):

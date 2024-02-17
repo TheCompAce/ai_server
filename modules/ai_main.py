@@ -31,12 +31,12 @@ def set_cache(settings, key, value, is_value_binary=False):
         cache.set(key, value, is_value_binary)
 
 def text_to_image(prompt, settings):
-    cache_val = check_cache(settings, prompt)
+    cache_val = check_cache(settings, ("tti", prompt))
     if (cache_val!= None):
         return cache_val
     
     if (settings.get("use_sdc", False) == True):
-        reval = sdlx_turbo.text_to_image_sdxl(prompt)
+        reval = sdc.text_to_image_sdc(prompt)    
     if (settings.get("use_sd15", False) == True):
         reval = sd15.text_to_image_sd15(prompt)
     elif (settings.get("use_sd", False) == True):
@@ -44,36 +44,36 @@ def text_to_image(prompt, settings):
     elif (settings.get("use_proteus", False) == True):
         reval = proteus.text_to_image_proteus(prompt)
     elif (settings.get("use_sdxl", True) == True):
-        reval = sdc.text_to_image_sdc(prompt)    
+        reval = sdlx_turbo.text_to_image_sdxl(prompt)
     else:
         reval = openai.text_to_image_openai(prompt, settings)
     
-    set_cache(settings, prompt, reval, True)
+    set_cache(settings, ("tti", prompt), reval, True)
 
     return reval
 
 def image_to_depth(image, settings = {}):
-    cache_val = check_cache(settings, image)
+    cache_val = check_cache(settings, ("ttd", image))
     if (cache_val!= None):
         return cache_val
     
     reval = dpt.image_to_depth_dpt(image)
 
-    set_cache(settings, image, reval, True)
+    set_cache(settings, ("ttd", image), reval, True)
     return reval
 
 def detect_image(image, settings = {}):
-    cache_val = check_cache(settings, image)
+    cache_val = check_cache(settings, ("di", image))
     if (cache_val!= None):
         return cache_val
     
     reval = detr.detect_image_detr(image)
 
-    set_cache(settings, image, reval, True)    
+    set_cache(settings, ("di", image), reval, True)    
     return reval
 
 def variation_image(image, settings = {}):
-    cache_val = check_cache(settings, image)
+    cache_val = check_cache(settings, ("vi", image))
     if (cache_val!= None):
         return cache_val
     
@@ -82,31 +82,31 @@ def variation_image(image, settings = {}):
     else:
         reval = openai.image_variation_openai(image, settings)
 
-    set_cache(settings, image, reval, True)
+    set_cache(settings, ("vi", image), reval, True)
     return reval
     
 def sketch_image(image, prompt, negative_prompt = '', settings = {}):
-    cache_val = check_cache(settings, (image, prompt, negative_prompt))
+    cache_val = check_cache(settings, ("ski", (image, prompt, negative_prompt)))
     if (cache_val!= None):
         return cache_val
     
     reval = sketch_sdxl.image_sketch_sdxl(image, prompt, negative_prompt)
 
-    set_cache(settings, (image, prompt, negative_prompt), reval, True)
+    set_cache(settings, ("ski", (image, prompt, negative_prompt)), reval, True)
     return reval
 
 def music_generate(prompt, settings = {}):
-    cache_val = check_cache(settings, prompt)
+    cache_val = check_cache(settings, ("mg", prompt))
     if (cache_val!= None):
         return cache_val
     
     reval = musicgen.generate_music(prompt)
 
-    set_cache(settings, prompt, reval, True)
+    set_cache(settings, ("mg", prompt), reval, True)
     return reval
 
 def text_to_speech(prompt, settings = {}):
-    cache_val = check_cache(settings, prompt)
+    cache_val = check_cache(settings, ("tts", prompt))
     if (cache_val!= None):
         return cache_val
     
@@ -115,11 +115,11 @@ def text_to_speech(prompt, settings = {}):
     else:
         reval = openai.speak(prompt)
 
-    set_cache(settings, prompt, reval, True)
+    set_cache(settings, ("tts", prompt), reval, True)
     return reval
     
 def ask_llm(system, user, settings):
-    cache_val = check_cache(settings, (system, user))
+    cache_val = check_cache(settings, ("llm", (system, user)))
     if (cache_val!= None):
         return cache_val
     
@@ -128,21 +128,21 @@ def ask_llm(system, user, settings):
     else:
         reval = openai.ask(system, user, settings)
         
-    set_cache(settings, (system, user), reval, True)
+    set_cache(settings, ("llm", (system, user)), reval, True)
     return reval
     
 def ask_llm_json(system, user, settings):
-    cache_val = check_cache(settings, (system, user))
+    cache_val = check_cache(settings, ("llm_json", (system, user)))
     if (cache_val!= None):
         return cache_val
     
     reval = openai.ask_json(system, user, settings)
         
-    set_cache(settings, (system, user), reval, True)
+    set_cache(settings, ("llm_json", (system, user)), reval, True)
     return reval
     
 def get_vision(image, prompt, settings = {}):
-    cache_val = check_cache(settings, (image, prompt))
+    cache_val = check_cache(settings, ("vis", (image, prompt)))
     if (cache_val!= None):
         return cache_val
     
@@ -151,21 +151,21 @@ def get_vision(image, prompt, settings = {}):
     else:
         reval = openai.vision_openai(image, prompt, settings)
         
-    set_cache(settings, (image, prompt), reval, False)
+    set_cache(settings, ("vis", (image, prompt)), reval, False)
     return reval
 
 def speech_to_text(audio, settings = {}):
-    cache_val = check_cache(settings, audio)
+    cache_val = check_cache(settings, ("stt", audio))
     if (cache_val!= None):
         return cache_val
     
     reval = whisper.speech_to_text_whisper(audio)
         
-    set_cache(settings, audio, reval, False)
+    set_cache(settings, ("stt", audio), reval, False)
     return reval
     
 def ask_llm_embed(prompt, settings = {}):
-    cache_val = check_cache(settings, prompt)
+    cache_val = check_cache(settings, ("embed", prompt))
     if (cache_val!= None):
         return cache_val
     
@@ -174,15 +174,15 @@ def ask_llm_embed(prompt, settings = {}):
     else:
         reval = openai.create_embeddings(prompt)
         
-    set_cache(settings, prompt, reval, True)
+    set_cache(settings, ("embed", prompt), reval, True)
     return reval
     
 def text_to_sound(prompt, settings = {}):
-    cache_val = check_cache(settings, prompt)
+    cache_val = check_cache(settings, ("ttsd", prompt))
     if (cache_val!= None):
         return cache_val
 
     reval = audioldm.text_to_sound_audioldm(prompt)
         
-    set_cache(settings, prompt, reval, True)
+    set_cache(settings, ("ttsd", prompt), reval, True)
     return reval

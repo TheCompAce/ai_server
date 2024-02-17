@@ -1,7 +1,7 @@
 import io
-import torch
 from diffusers import AudioLDM2Pipeline
 import soundfile as sf
+import torch
 
 def text_to_sound_audioldm(prompt):
     """
@@ -22,7 +22,7 @@ def text_to_sound_audioldm(prompt):
 
     # Convert the generated audio to a byte stream
     audio_io = io.BytesIO()
-    sf.write(audio_io, audio.cpu().numpy(), 16000, format='wav')
+    sf.write(audio_io, audio, 16000, format='wav')  # Corrected line
     audio_io.seek(0)  # Rewind the buffer to the beginning
     
     return audio_io

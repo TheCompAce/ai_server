@@ -2,7 +2,8 @@ import torch
 from transformers import pipeline
 
 def ask_tinyllama(system, user):
-    text_pipe = pipeline("text-generation", model="TinyLlama/TinyLlama-1.1B-Chat-v1.0", torch_dtype=torch.bfloat16, device_map="auto")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    text_pipe = pipeline("text-generation", model="TinyLlama/TinyLlama-1.1B-Chat-v1.0", torch_dtype=torch.bfloat16, device_map=device)
     
     messages = [
         {
