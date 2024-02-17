@@ -14,16 +14,19 @@ from modules.ai import moondream1
 from modules.ai import whisper
 from modules.ai import nomic
 from modules.ai import openai
+from modules.ai import proteus
 
 def text_to_image(prompt, settings):
     if (settings.get("use_sdxl", False) == True):
         return sdlx_turbo.text_to_image_sdxl(prompt)
     if (settings.get("use_sd15", False) == True):
         return sd15.text_to_image_sd15(prompt)
-    elif (settings.get("use_sd", True) == True):
+    elif (settings.get("use_sd", False) == True):
         return sd_turbo.text_to_image_sd(prompt)
+    elif (settings.get("use_proteus", False) == True):
+        return proteus.text_to_image_proteus(prompt)
     elif (settings.get("use_sdc", True) == True):
-        return sdc.text_to_image_sdc(prompt)
+        return sdc.text_to_image_sdc(prompt)    
     else:
         return openai.text_to_image_openai(prompt, settings)
 

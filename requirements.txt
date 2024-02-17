@@ -16,3 +16,4 @@ flask
 werkzeug
 mediapipe
 openai
+peft
