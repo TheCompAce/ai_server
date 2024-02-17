@@ -5,3 +5,4 @@ generated_images
 moondream
 metavoice-src
 *.whl
+cache.db
