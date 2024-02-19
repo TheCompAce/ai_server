@@ -1,5 +1,5 @@
 {
-    "use_cache": true,
+    "use_cache": false,
     "use_sdxl": true,
     "dalle_model": "dall-e-2",
     "use_sd_variation": true,

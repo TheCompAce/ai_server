@@ -114,7 +114,8 @@ def speak():
 @app.route('/sound', methods=['POST'])
 def sound_effect():
     settings = get_settings()
-    text = request.form['prompt']
+    data = request.json
+    text = data.get('prompt', '')
     audio_io = text_to_sound(text, settings)
 
     return send_file(audio_io, mimetype='audio/mp3', as_attachment=True, download_name='generated_sound.mp3')
@@ -134,10 +135,17 @@ def hear():
 
 @app.route('/image', methods=['POST'])
 def generate_image_from_text():
-    settings = get_settings()
+    
+    data = request.get_json()  # Use get_json() to parse JSON data
+    
+    if not data or 'prompt' not in data:
+        return "Invalid request", 400  # Return a Bad Request error if no prompt
+    
+    prompt = data['prompt']
+    # Process the prompt to gen
     
     # Assuming text_to_image returns a PIL Image object
-    image = text_to_image(request.form['prompt'], settings)
+    image = text_to_image(prompt, settings)
     
     # Convert PIL image to byte array
     img_io = io.BytesIO()

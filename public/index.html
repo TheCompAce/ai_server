@@ -211,23 +211,27 @@
         });
 
         document.getElementById('imageForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const prompt = this.prompt.value;
-            
+            e.preventDefault(); // Prevent the default form submission behavior
+
+            const promptValue = this.prompt.value; // Retrieve the value of the prompt input
+
+            // Create a fetch request with JSON payload
             fetch('/image', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/json' // Set the content type to application/json
                 },
-                body: `prompt=${encodeURIComponent(prompt)}`
+                body: JSON.stringify({ prompt: promptValue }) // Convert the prompt object to a JSON string
             })
-            .then(response => response.blob())
+            .then(response => response.blob()) // Convert the response to a Blob object
             .then(blob => {
-                const imageUrl = URL.createObjectURL(blob);
-                document.getElementById('generatedImage').src = imageUrl;
-                document.getElementById('generatedImage').style.display = 'block';
-            });
+                const imageUrl = URL.createObjectURL(blob); // Create a local URL for the blob object
+                document.getElementById('generatedImage').src = imageUrl; // Set the source of the image to the blob URL
+                document.getElementById('generatedImage').style.display = 'block'; // Make the image visible
+            })
+            .catch(error => console.error('Error:', error)); // Log any errors to the console
         });
+
 
         document.getElementById('musicForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -375,23 +379,28 @@
         });
 
         document.getElementById('soundForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const prompt = this.prompt.value;
-            
+            e.preventDefault(); // Prevent the default form submission behavior
+
+            const promptValue = this.prompt.value; // Retrieve the value of the prompt input
+
+            // Create a fetch request with JSON payload
             fetch('/sound', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/json' // Set the content type to application/json
                 },
-                body: `prompt=${encodeURIComponent(prompt)}`
+                body: JSON.stringify({ prompt: promptValue }) // Convert the prompt object to a JSON string
             })
-            .then(response => response.blob())
+            .then(response => response.blob()) // Convert the response to a Blob object suitable for audio
             .then(blob => {
-                const soundUrl = URL.createObjectURL(blob);
+                const soundUrl = URL.createObjectURL(blob); // Create a local URL for the blob object
                 const soundPlayer = document.getElementById('generatedSound');
-                soundPlayer.src = soundUrl;
-                soundPlayer.style.display = 'block';
-            });
+                soundPlayer.src = soundUrl; // Set the source of the audio element to the blob URL
+                soundPlayer.style.display = 'block'; // Make the audio player visible
+                soundPlayer.load(); // Load the audio source
+                soundPlayer.play(); // Optional: play the sound automatically
+            })
+            .catch(error => console.error('Error:', error)); // Log any errors to the console
         });
 
 
