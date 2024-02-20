@@ -106,7 +106,8 @@ def generate_music():
 @app.route('/speak', methods=['POST'])
 def speak():
     settings = get_settings()
-    text = request.form['prompt']
+    data = request.json
+    text = data.get('prompt', '')
     audio_io = text_to_speech(text, settings)
 
     return send_file(audio_io, mimetype='audio/mp3', as_attachment=True, download_name='generated_speech.mp3')

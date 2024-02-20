@@ -14,11 +14,11 @@ def text_to_sound_audioldm(prompt):
     repo_id = "cvssp/audioldm2"
 
     # Initialize the pipeline
-    pipe = AudioLDM2Pipeline.from_pretrained(repo_id)
-    pipe = pipe.to(device)
+    AudioLDM2_pipe = AudioLDM2Pipeline.from_pretrained(repo_id)
+    AudioLDM2_pipe = AudioLDM2_pipe.to(device)
 
     # Generate audio based on the prompt
-    audio = pipe(prompt, num_inference_steps=200, audio_length_in_s=10.0).audios[0]
+    audio = AudioLDM2_pipe(prompt, num_inference_steps=200, audio_length_in_s=10.0).audios[0]
 
     # Convert the generated audio to a byte stream
     audio_io = io.BytesIO()
