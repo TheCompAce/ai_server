@@ -51,6 +51,15 @@
     </form>
     <img id="generatedImage" src="" alt="Generated Image" style="max-width: 500px; display: none;">
 
+    <!-- Form to test /image/transform endpoint -->
+    <h2>Image Transform Endpoint Test</h2>
+    <form id="transForm" enctype="multipart/form-data">
+        <input type="file" name="image" required>
+        <input type="text" name="text" placeholder="Enter prompt">
+        <button type="submit">Submit</button>
+    </form>
+    <div id="transResult"></div>
+
     <!-- Form to test /image/variation endpoint -->
     <h2>Image Variation Endpoint Test</h2>
     <form id="variationForm" enctype="multipart/form-data">
@@ -132,6 +141,7 @@
         <li><a href="/ask/embed">Ask Embeddings Endpoint</a> - POST</li>
         <li><a href="/image">Image Endpoint</a> - POST</li>
         <li><a href="/image/variation">Image Variation Edpoint</a> - POST</li>
+        <li><a href="/image/transform">Image Transorm Edpoint</a> - POST</li>
         <li><a href="/image/detect">Image Sketch Edpoint</a> - POST</li>
         <li><a href="/image/sketch">Object Detection Edpoint</a> - POST</li>        
         <li><a href="/image/depth">Depth Endpoint</a> - POST</li>
@@ -403,6 +413,18 @@
             .catch(error => console.error('Error:', error)); // Log any errors to the console
         });
 
+        document.getElementById('transForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/image/transform', {
+                method: 'POST',
+                body: formData // Do not set Content-Type header manually
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('transResult').innerText = JSON.stringify(data);
+            });
+        });
 
     </script>
 </body>

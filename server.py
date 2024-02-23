@@ -1,6 +1,6 @@
 from datetime import datetime
 import json
-from modules.ai_main import text_to_image, image_to_depth, detect_image, variation_image, sketch_image, music_generate, text_to_speech, ask_llm, get_vision, ask_llm_json, speech_to_text, ask_llm_embed, text_to_sound
+from modules.ai_main import text_to_image, image_to_depth, detect_image, variation_image, sketch_image, music_generate, text_to_speech, ask_llm, get_vision, ask_llm_json, speech_to_text, ask_llm_embed, text_to_sound, transform_image
 
 from PIL import Image
 from flask import Flask, request, jsonify, send_from_directory, send_file
@@ -199,6 +199,27 @@ def image_detect():
 
     detections = detect_image(file, settings)
     return jsonify(detections)
+
+# Endpoint to process the image and text
+@app.route('/image/transform', methods=['POST'])
+def image_transform():
+    settings = get_settings()
+    if 'image' not in request.files:
+        return jsonify({"error": "No image file provided"}), 400
+    
+    file = request.files['image']
+    text = request.form.get('text', '')
+    if file and allowed_file(file.filename):
+        # Assuming 'file' is the uploaded file object from Flask request
+        file_stream = file.stream  # Get the file stream
+        image = Image.open(file_stream)  # Open the image directly from the stream
+
+        
+        result = transform_image(image, text, settings)
+
+        return jsonify({"result": result})
+    else:
+        return jsonify({"error": "Invalid request"}), 400
 
 @app.route('/image/variation', methods=['POST'])
 def image_variation():

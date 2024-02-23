@@ -4,6 +4,8 @@ from modules.ai import sd_turbo
 from modules.ai import sdc
 from modules.ai import wuerstchen
 from modules.ai import sketch_sdxl
+from modules.ai import instruct_pix2pix
+from modules.ai import sdx_lighting
 from modules.ai import dpt
 from modules.ai import detr
 from modules.ai import sd_variations
@@ -43,6 +45,8 @@ def text_to_image(prompt, settings):
         reval = sd_turbo.text_to_image_sd(prompt)
     elif (settings.get("use_proteus", False) == True):
         reval = proteus.text_to_image_proteus(prompt)
+    elif (settings.get("use_sdxl_lighting", False) == True):
+        reval = sdx_lighting.generate_image_with_lighting(prompt)
     elif (settings.get("use_sdxl", True) == True):
         reval = sdlx_turbo.text_to_image_sdxl(prompt)
     else:
@@ -83,6 +87,16 @@ def variation_image(image, settings = {}):
         reval = openai.image_variation_openai(image, settings)
 
     set_cache(settings, ("vi", image), reval, True)
+    return reval
+
+def transform_image(image, prompt, settings = {}):
+    cache_val = check_cache(settings, ("trans", (image, prompt)))
+    if (cache_val!= None):
+        return cache_val
+    
+    reval = instruct_pix2pix.transform_image_with_prompt(image, prompt)
+        
+    set_cache(settings, ("trans", (image, prompt)), reval, False)
     return reval
     
 def sketch_image(image, prompt, negative_prompt = '', settings = {}):
