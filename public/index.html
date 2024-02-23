@@ -58,7 +58,7 @@
         <input type="text" name="text" placeholder="Enter prompt">
         <button type="submit">Submit</button>
     </form>
-    <div id="transResult"></div>
+    <img id="transResult" src="" alt="Tranform Variation" style="max-width: 500px; display: none;">
 
     <!-- Form to test /image/variation endpoint -->
     <h2>Image Variation Endpoint Test</h2>
@@ -420,9 +420,11 @@
                 method: 'POST',
                 body: formData // Do not set Content-Type header manually
             })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('transResult').innerText = JSON.stringify(data);
+            .then(response => response.blob())
+            .then(blob => {
+                const imageUrl = URL.createObjectURL(blob);
+                document.getElementById('transResult').src = imageUrl;
+                document.getElementById('transResult').style.display = 'block';
             });
         });
 

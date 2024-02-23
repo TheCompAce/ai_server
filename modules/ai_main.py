@@ -96,7 +96,7 @@ def transform_image(image, prompt, settings = {}):
     
     reval = instruct_pix2pix.transform_image_with_prompt(image, prompt)
         
-    set_cache(settings, ("trans", (image, prompt)), reval, False)
+    set_cache(settings, ("trans", (image, prompt)), reval, True)
     return reval
     
 def sketch_image(image, prompt, negative_prompt = '', settings = {}):

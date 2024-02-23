@@ -214,10 +214,12 @@ def image_transform():
         file_stream = file.stream  # Get the file stream
         image = Image.open(file_stream)  # Open the image directly from the stream
 
-        
-        result = transform_image(image, text, settings)
-
-        return jsonify({"result": result})
+        # Generate a date/time formatted image name for the download
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        tranform_image_name = f"tranform_{timestamp}.png"
+        img_io = transform_image(image, text, settings)
+        print(img_io)
+        return send_file(img_io, mimetype='image/png', as_attachment=True, download_name=tranform_image_name)
     else:
         return jsonify({"error": "Invalid request"}), 400
 
