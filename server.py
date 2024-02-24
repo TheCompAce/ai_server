@@ -218,8 +218,64 @@ def image_transform():
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         tranform_image_name = f"tranform_{timestamp}.png"
         img_io = transform_image(image, text, settings)
-        print(img_io)
         return send_file(img_io, mimetype='image/png', as_attachment=True, download_name=tranform_image_name)
+    else:
+        return jsonify({"error": "Invalid request"}), 400
+    
+# Endpoint to process the remove background
+@app.route('/image/removebg', methods=['POST'])
+def image_removebg():
+    settings = get_settings()
+    if 'image' not in request.files:
+        return jsonify({"error": "No image file provided"}), 400
+    
+    file = request.files['image']
+    
+    range_val = float(request.form.get('range', '.2')) / 100
+    if file and allowed_file(file.filename):
+        # Assuming 'file' is the uploaded file object from Flask request
+        file_stream = file.stream  # Get the file stream
+        image = Image.open(file_stream)  # Open the image directly from the stream
+
+        # Generate a date/time formatted image name for the download
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        remove_bg_name = f"removebg_{timestamp}.png"
+
+        remove_bg_image = image_to_depth(file, settings)
+
+        # now take the red channel and use it for the alpha of the image passed in
+        # We need to base this off our "range_val" (between 0 to 1) based on the remove_bg_image.chennel Level
+        # We also need to make sure the image is RGBA
+        image = image.convert('RGBA')
+        remove_bg_image = remove_bg_image.convert('RGBA')
+
+        # Create a new image for the alpha channel with the same dimensions
+        alpha = Image.new('L', image.size, 255)  # Start with a fully opaque alpha channel
+
+        # Apply the specified range to adjust the alpha channel based on the depth image
+        depth_pixels = remove_bg_image.load()
+        alpha_pixels = [image.width * y + x for y in range(image.height) for x in range(image.width)]
+
+        # Iterate through the image, pixel by pixel        
+        for y in range(image.height):
+            for x in range(image.width):
+                # Scale the depth pixel value based on the range_val
+                if depth_pixels[x, y][0] < (range_val * 255):
+                    alpha_pixels[y * image.width + x] = 0
+                else:
+                    alpha_pixels[y * image.width + x] = 255
+
+        alpha.putdata(alpha_pixels)
+
+        # Combine the original image with the new alpha channel
+        image.putalpha(alpha)
+
+        # Convert PIL image to byte array with alpha
+        img_io = io.BytesIO()
+        image.save(img_io, 'PNG', quality=70)
+        img_io.seek(0)
+        
+        return send_file(img_io, mimetype='image/png', as_attachment=True, download_name=remove_bg_name)
     else:
         return jsonify({"error": "Invalid request"}), 400
 

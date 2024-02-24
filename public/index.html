@@ -88,6 +88,16 @@
     </form>
     <img id="depthImage" src="" alt="Depth Map" style="max-width: 500px; display: none;">
 
+    <!-- Form to test /image/removebg endpoint -->
+    <h2>Image Remove Background (using Depth) Endpoint Test</h2>
+    <form id="removebgForm" enctype="multipart/form-data">
+        <input type="file" name="image" required>
+        <input type="range" name="range" min="0" max="100" value="50" step="1" required>
+        <button type="submit">Submit</button>
+    </form>
+    <img id="removebgResult" src="" alt="Remove Background" style="max-width: 500px; display: none;">
+
+
     <!-- Form to test /image/sketch endpoint -->
     <h2>Sketch Generation Endpoint Test</h2>
     <form id="sketchForm" enctype="multipart/form-data">
@@ -145,6 +155,7 @@
         <li><a href="/image/detect">Image Sketch Edpoint</a> - POST</li>
         <li><a href="/image/sketch">Object Detection Edpoint</a> - POST</li>        
         <li><a href="/image/depth">Depth Endpoint</a> - POST</li>
+        <li><a href="/image/removebg">Remove Background</a> - POST</li>
         <li><a href="/sound">Sound Effect Endpoint</a> - POST</li>
         <li><a href="/speak">Speak Endpoint</a> - POST</li>
         <li><a href="/hear">Speach To Text Endpoint</a> - POST</li>
@@ -425,6 +436,21 @@
                 const imageUrl = URL.createObjectURL(blob);
                 document.getElementById('transResult').src = imageUrl;
                 document.getElementById('transResult').style.display = 'block';
+            });
+        });
+
+        document.getElementById('removebgForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch('/image/removebg', {
+                method: 'POST',
+                body: formData // Do not set Content-Type header manually
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const imageUrl = URL.createObjectURL(blob);
+                document.getElementById('removebgResult').src = imageUrl;
+                document.getElementById('removebgResult').style.display = 'block';
             });
         });
 
