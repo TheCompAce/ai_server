@@ -50,6 +50,13 @@
         <button type="submit">Generate Image</button>
     </form>
     <img id="generatedImage" src="" alt="Generated Image" style="max-width: 500px; display: none;">
+    
+    <h2>GIF Generation Endpoint Test</h2>
+    <form id="gifForm">
+        <input type="text" name="prompt" placeholder="Enter prompt for GIF generation" required>
+        <button type="submit">Generate Image</button>
+    </form>
+    <img id="generatedGIF" src="" alt="Generated GIF" style="max-width: 500px; display: none;">
 
     <!-- Form to test /image/transform endpoint -->
     <h2>Image Transform Endpoint Test</h2>
@@ -452,6 +459,28 @@
                 document.getElementById('removebgResult').src = imageUrl;
                 document.getElementById('removebgResult').style.display = 'block';
             });
+        });
+
+        document.getElementById('gifForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent the default form submission behavior
+
+            const promptValue = this.prompt.value; // Retrieve the value of the prompt input
+
+            // Create a fetch request with JSON payload
+            fetch('/gif', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json' // Set the content type to application/json
+                },
+                body: JSON.stringify({ prompt: promptValue }) // Convert the prompt object to a JSON string
+            })
+            .then(response => response.blob()) // Convert the response to a Blob object
+            .then(blob => {
+                const imageUrl = URL.createObjectURL(blob); // Create a local URL for the blob object
+                document.getElementById('generatedGIF').src = imageUrl; // Set the source of the image to the blob URL
+                document.getElementById('generatedGIF').style.display = 'block'; // Make the image visible
+            })
+            .catch(error => console.error('Error:', error)); // Log any errors to the console
         });
 
     </script>

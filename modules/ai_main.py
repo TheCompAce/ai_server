@@ -3,6 +3,7 @@ from modules.ai import sd15
 from modules.ai import sd_turbo
 from modules.ai import sdc
 from modules.ai import wuerstchen
+from modules.ai import animateLCM
 from modules.ai import sketch_sdxl
 from modules.ai import instruct_pix2pix
 from modules.ai import sdx_lighting
@@ -53,6 +54,17 @@ def text_to_image(prompt, settings):
         reval = openai.text_to_image_openai(prompt, settings)
     
     set_cache(settings, ("tti", prompt), reval, True)
+
+    return reval
+
+def text_to_gif(prompt, settings):
+    cache_val = check_cache(settings, ("ttg", prompt))
+    if (cache_val!= None):
+        return cache_val
+    
+    reval = animateLCM.text_to_gif_animateLCM(prompt)    
+    
+    set_cache(settings, ("ttg", prompt), reval, True)
 
     return reval
 

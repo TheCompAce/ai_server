@@ -8,9 +8,9 @@ def generate_music(prompt):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     
     # Initialize the music generation pipeline
-    synthesiser = pipeline("text-to-audio", "facebook/musicgen-stereo-small", device=device, torch_dtype=torch.float16)
+    synthesiser = pipeline("text-to-audio", "facebook/musicgen-stereo-large", device=device, torch_dtype=torch.float16)
 
-    music = synthesiser(prompt, forward_params={"max_new_tokens": 256})
+    music = synthesiser(prompt, forward_params={"max_new_tokens": 512})
     
     # Convert audio array to byte stream
     audio_io = io.BytesIO()

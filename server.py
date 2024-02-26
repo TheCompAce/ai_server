@@ -1,6 +1,6 @@
 from datetime import datetime
 import json
-from modules.ai_main import text_to_image, image_to_depth, detect_image, variation_image, sketch_image, music_generate, text_to_speech, ask_llm, get_vision, ask_llm_json, speech_to_text, ask_llm_embed, text_to_sound, transform_image
+from modules.ai_main import text_to_gif, text_to_image, image_to_depth, detect_image, variation_image, sketch_image, music_generate, text_to_speech, ask_llm, get_vision, ask_llm_json, speech_to_text, ask_llm_embed, text_to_sound, transform_image
 
 from PIL import Image
 from flask import Flask, request, jsonify, send_from_directory, send_file
@@ -162,6 +162,31 @@ def generate_image_from_text():
         mimetype='image/png',
         as_attachment=True,
         download_name=image_name,
+    )
+
+@app.route('/gif', methods=['POST'])
+def generate_gif_from_text():
+    
+    data = request.get_json()  # Use get_json() to parse JSON data
+    
+    if not data or 'prompt' not in data:
+        return "Invalid request", 400  # Return a Bad Request error if no prompt
+    
+    prompt = data['prompt']
+    # Process the prompt to gen
+    
+    # Assuming text_to_image returns a PIL Image object
+    gif_io = text_to_gif(prompt, settings)  # Assuming this returns a BytesIO object
+    
+    # Generate a date/time formatted image name for the download
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    gif_name = f"{timestamp}.gif"
+    
+    return send_file(
+        gif_io,
+        mimetype='image/gif',
+        as_attachment=True,
+        download_name=gif_name,
     )
 
 @app.route('/image/depth', methods=['POST'])
