@@ -15,6 +15,8 @@ def text_to_image_sdc(prompt, negative_prompt="", num_images_per_prompt=2, guida
         width=1024,
         negative_prompt=negative_prompt,
         guidance_scale=guidance_scale,
+        low_cpu_mem_usage=False,
+        ignore_mismatched_sizes=True,
         num_images_per_prompt=num_images_per_prompt,
         num_inference_steps=num_inference_steps_prior
     )

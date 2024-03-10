@@ -1,6 +1,6 @@
 {
     "use_cache": false,
-    "use_sdxl": true,
+    "use_sdc": true,
     "dalle_model": "dall-e-2",
     "use_sd_variation": true,
     "use_speecht5": true,

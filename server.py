@@ -136,7 +136,7 @@ def hear():
 
 @app.route('/image', methods=['POST'])
 def generate_image_from_text():
-    
+    settings = get_settings()
     data = request.get_json()  # Use get_json() to parse JSON data
     
     if not data or 'prompt' not in data:
