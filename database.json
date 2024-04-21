@@ -1,0 +1,22 @@
+{
+    "databases": [
+      {
+        "name": "user_management",
+        "tables": {
+          "users": {
+            "columns": {
+              "id": "INTEGER PRIMARY KEY AUTOINCREMENT",
+              "username": "TEXT UNIQUE NOT NULL",
+              "email": "TEXT UNIQUE NOT NULL",
+              "password_hash": "TEXT NOT NULL",
+              "registration_date": "DATETIME NOT NULL",
+              "is_email_verified": "BOOLEAN NOT NULL DEFAULT 0",
+              "verification_code": "TEXT",
+              "verification_code_expiry": "DATETIME"
+            }
+          }
+        }
+      }
+    ]
+  }
+  

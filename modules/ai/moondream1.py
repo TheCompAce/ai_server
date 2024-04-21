@@ -17,7 +17,7 @@ def vision_moondream1(image, text):
 def vision_moondream2(image, question):
     # Download the model and tokenizer from Hugging Face Hub
     model_id = "vikhyatk/moondream2"
-    revision = "2024-03-06"
+    revision = "2024-03-13"
     # Ensure the model and tokenizer are downloaded only once, if not already available
     model_path = snapshot_download(model_id, revision=revision)
     

@@ -52,3 +52,11 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
+#maskCanvasContainer {
+    border: 1px solid #000; /* Visible border for the container */
+}
+#imageCanvas, #maskCanvas {
+    max-width: 100%;
+    cursor: crosshair; /* Makes it clear that the canvas is drawable */
+}

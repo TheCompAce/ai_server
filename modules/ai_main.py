@@ -10,6 +10,7 @@ from modules.ai import sdx_lighting
 from modules.ai import dpt
 from modules.ai import detr
 from modules.ai import sd_variations
+from modules.ai import sd_inpaint
 from modules.ai import musicgen
 from modules.ai import speecht5_tts
 from modules.ai import tinyllama
@@ -19,7 +20,10 @@ from modules.ai import nomic
 from modules.ai import openai
 from modules.ai import proteus
 from modules.ai import audioldm
+from modules.ai import parlertts
+from modules.ai import llama3
 from modules.cache import Cache
+
 
 def check_cache(settings, key):
     cache = Cache()
@@ -39,17 +43,17 @@ def text_to_image(prompt, settings):
         return cache_val
     
     if (settings.get("use_sdc", False) == True):
-        reval = sdc.text_to_image_sdc(prompt)    
+        reval = sdc.text_to_image_sdc(prompt)    # Broken "You may consider adding `ignore_mismatched_sizes=True` in the model `from_pretrained` method."
     if (settings.get("use_sd15", False) == True):
-        reval = sd15.text_to_image_sd15(prompt)
+        reval = sd15.text_to_image_sd15(prompt) # takes a 2 minutes, best results
     elif (settings.get("use_sd", False) == True):
-        reval = sd_turbo.text_to_image_sd(prompt)
+        reval = sd_turbo.text_to_image_sd(prompt) # takes a 2 minutes, but bad results
     elif (settings.get("use_proteus", False) == True):
-        reval = proteus.text_to_image_proteus(prompt)
+        reval = proteus.text_to_image_proteus(prompt)  # takes 1.5 hours for a image
     elif (settings.get("use_sdxl_lighting", False) == True):
-        reval = sdx_lighting.generate_image_with_lighting(prompt)
-    elif (settings.get("use_sdxl", True) == True):
-        reval = sdlx_turbo.text_to_image_sdxl(prompt)
+        reval = sdx_lighting.generate_image_with_lighting(prompt) # not enough memory
+    elif (settings.get("use_sdxl", True) == True): 
+        reval = sdlx_turbo.text_to_image_sdxl(prompt) # takes a minute, but bad results
     else:
         reval = openai.text_to_image_openai(prompt, settings)
     
@@ -101,6 +105,26 @@ def variation_image(image, settings = {}):
     set_cache(settings, ("vi", image), reval, True)
     return reval
 
+def inpaint_image(image_stream, mask_stream, prompt, settings={}):
+    # Check for cache first
+    cache_key = ("inpaint", (prompt, image_stream, mask_stream))
+    cache_val = check_cache(settings, cache_key)
+    if cache_val is not None:
+        return cache_val
+
+    # Perform inpainting
+    inpainted_image_io = sd_inpaint.inpaint_image_with_mask(image_stream, mask_stream, prompt)
+
+    # Convert byte stream to PIL Image for further processing or direct response
+    inpainted_image = Image.open(inpainted_image_io)
+
+    # Optionally, here you could convert the PIL Image back to a suitable format for your application
+
+    # Cache the result if caching is enabled
+    set_cache(settings, cache_key, inpainted_image, is_value_binary=True)
+    
+    return inpainted_image
+
 def transform_image(image, prompt, settings = {}):
     cache_val = check_cache(settings, ("trans", (image, prompt)))
     if (cache_val!= None):
@@ -143,6 +167,16 @@ def text_to_speech(prompt, settings = {}):
 
     set_cache(settings, ("tts", prompt), reval, True)
     return reval
+
+def parlor_text_to_speech(prompt, description, settings = {}):
+    cache_val = check_cache(settings, ("parlor_tts", prompt))
+    if (cache_val!= None):
+        return cache_val
+    
+    reval = parlertts.generate_speech(prompt, description)
+
+    set_cache(settings, ("parlor_tts", prompt), reval, True)
+    return reval
     
 def ask_llm(system, user, settings):
     cache_val = check_cache(settings, ("llm", (system, user)))
@@ -151,6 +185,8 @@ def ask_llm(system, user, settings):
     
     if (settings.get("use_tinyllama", True) == True):
         reval = tinyllama.ask_tinyllama(system, user)
+    elif (settings.get("use_llama3", True) == True):
+        reval = llama3.ask_llama3(system, user)
     else:
         reval = openai.ask(system, user, settings)
         
@@ -173,7 +209,7 @@ def get_vision(image, prompt, settings = {}):
         return cache_val
     
     if (settings.get("use_moondream", True) == True):
-        reval = moondream1.vision_moondream1(image, prompt)
+        reval = moondream1.vision_moondream2(image, prompt)
     else:
         reval = openai.vision_openai(image, prompt, settings)
         

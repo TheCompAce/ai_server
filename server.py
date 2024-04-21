@@ -1,13 +1,24 @@
+import os
+import io
+import sys
+import signal
+
 from datetime import datetime
 import json
-from modules.ai_main import text_to_gif, text_to_image, image_to_depth, detect_image, variation_image, sketch_image, music_generate, text_to_speech, ask_llm, get_vision, ask_llm_json, speech_to_text, ask_llm_embed, text_to_sound, transform_image
+from modules.ai_main import text_to_gif, text_to_image, image_to_depth, detect_image, variation_image, sketch_image, music_generate, text_to_speech, ask_llm, get_vision, ask_llm_json, speech_to_text, ask_llm_embed, text_to_sound, transform_image, inpaint_image, parlor_text_to_speech
+from modules.database import DatabaseManager
+
 
 from PIL import Image
 from flask import Flask, request, jsonify, send_from_directory, send_file
+from werkzeug.security import check_password_hash, generate_password_hash
+from flask_cors import CORS
 
-import io
 
-import os
+
+db_manager = DatabaseManager('database.json')  # Adjust path as necessary
+db_manager.load_config()
+db_manager.build()
 
 settings ={}
 
@@ -26,11 +37,15 @@ def clear_generated_images_folder():
             file_path = os.path.join(folder, file)
             if os.path.isfile(file_path):
                 os.remove(file_path)
-
+0
 # Clear the folder when the application starts
 clear_generated_images_folder()
 
+
+# app = Flask(__name__)
 app = Flask(__name__, static_folder='public')
+CORS(app, resources={r"/": {"origins": "*"}})  # Adjust origins as needed
+
 
 # Serve HTML, JS, CSS, and image files from the static folder
 @app.route('/')
@@ -111,6 +126,19 @@ def speak():
     audio_io = text_to_speech(text, settings)
 
     return send_file(audio_io, mimetype='audio/mp3', as_attachment=True, download_name='generated_speech.mp3')
+
+@app.route('/speak/parlor', methods=['POST'])
+def speak_parlor():
+    data = request.get_json()
+    prompt = data.get('prompt', '')
+    description = data.get('description', '')
+
+    # You may want to add error handling or validation here
+    
+    audio_io = parlor_text_to_speech(prompt, description, settings)
+
+    return send_file(audio_io, mimetype='audio/wav', as_attachment=True, download_name='parlor_speech.wav')
+
 
 @app.route('/sound', methods=['POST'])
 def sound_effect():
@@ -247,6 +275,47 @@ def image_transform():
     else:
         return jsonify({"error": "Invalid request"}), 400
     
+@app.route('/image/inpaint', methods=['POST'])
+def image_inpaint():
+    settings = get_settings()  # Retrieve settings if they are used within inpaint_image
+    
+    # Ensure both 'image' and 'mask' are present in the request files
+    if 'image' not in request.files or 'mask' not in request.files:
+        return jsonify({"error": "No image or mask file provided"}), 400
+
+    image_file = request.files.get('image')
+    mask_file = request.files.get('mask')
+
+    if not image_file:
+        print("Missing image file")
+        return "Missing image file", 400
+    
+    if not mask_file:
+        print("Missing mask file")
+        return "Missing mask file", 400
+    
+    # Optional: You can add checks here to ensure the files are of allowed types
+    
+    prompt = request.form.get('prompt', '')  # Retrieve the prompt from form data
+    
+    # Call the inpaint_image function
+    inpainted_image = inpaint_image(image_file.stream, mask_file.stream, prompt, settings)
+    
+    # Convert the inpainted PIL Image to a byte array for response
+    img_io = io.BytesIO()
+    inpainted_image.save(img_io, 'PNG', quality=70)
+    img_io.seek(0)
+    
+    # You can add logic here to generate a dynamic filename based on the request
+    filename = "inpainted_image.png"
+    
+    return send_file(
+        img_io,
+        mimetype='image/png',
+        as_attachment=True,
+        download_name=filename
+    )
+
 # Endpoint to process the remove background
 @app.route('/image/removebg', methods=['POST'])
 def image_removebg():
@@ -340,6 +409,48 @@ def image_sketch():
 
     return send_file(img_io, mimetype='image/png', as_attachment=True, download_name=sketch_image_name)
 
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+    
+    if not all([username, email, password]):
+        return jsonify({"error": "Missing username, email, or password"}), 400
+
+    # Check if user already exists
+    existing_user = db_manager.read_user_by_email(email)
+    if existing_user:
+        return jsonify({"error": "User already exists"}), 400
+
+    # Hash password
+    hashed_password = generate_password_hash(password, method='sha256')
+
+    # Create user
+    user_id = db_manager.create_user({'username': username, 'email': email, 'password_hash': hashed_password})
+    
+    return jsonify({"message": "User created successfully", "user_id": user_id}), 201
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    
+    if not all([email, password]):
+        return jsonify({"error": "Missing email or password"}), 400
+    
+    # Fetch user by email
+    user = db_manager.read_user_by_email(email)
+    
+    if user and check_password_hash(user['password_hash'], password):
+        # Successfully authenticated
+        # Here, implement session creation or token generation as per your requirement
+        return jsonify({"message": "Login successful", "user_id": user['id']}), 200
+    else:
+        return jsonify({"error": "Invalid credentials"}), 401
+
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -347,3 +458,12 @@ def allowed_file(filename):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_manager.close_connections()
+
+def signal_handler(sig, frame):
+    print('Shutting down gracefully...')
+    db_manager.close_connections()
+    sys.exit(0)

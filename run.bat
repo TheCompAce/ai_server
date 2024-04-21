@@ -20,6 +20,8 @@ if not exist env (
     pip install ".[xformers]" --upgrade --force-reinstall --extra-index-url https://download.pytorch.org/whl/cu121
     pip install -r requirements.txt | find /V "already satisfied"
     pip install git+https://github.com/kashif/diffusers.git@wuerstchen-v3
+
+    pip install git+https://github.com/huggingface/parler-tts.git
     
     REM python -m spacy download en_core_web_sm
     REM pip install git+https://github.com/suno-ai/bark.git

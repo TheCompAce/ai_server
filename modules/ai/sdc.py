@@ -5,8 +5,8 @@ def text_to_image_sdc(prompt, negative_prompt="", num_images_per_prompt=2, guida
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     # Load the prior and decoder models, adjusting for the appropriate torch_dtype for efficiency
-    prior = StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", torch_dtype=torch.bfloat16).to(device)
-    decoder = StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", torch_dtype=torch.float16).to(device)
+    prior = StableCascadePriorPipeline.from_pretrained("stabilityai/stable-cascade-prior", torch_dtype=torch.bfloat16, low_cpu_mem_usage=False, ignore_mismatched_sizes=True).to(device)
+    decoder = StableCascadeDecoderPipeline.from_pretrained("stabilityai/stable-cascade", torch_dtype=torch.float16, low_cpu_mem_usage=False, ignore_mismatched_sizes=True).to(device)
 
     # Generate image embeddings using the prior model
     prior_output = prior(
@@ -15,8 +15,6 @@ def text_to_image_sdc(prompt, negative_prompt="", num_images_per_prompt=2, guida
         width=1024,
         negative_prompt=negative_prompt,
         guidance_scale=guidance_scale,
-        low_cpu_mem_usage=False,
-        ignore_mismatched_sizes=True,
         num_images_per_prompt=num_images_per_prompt,
         num_inference_steps=num_inference_steps_prior
     )

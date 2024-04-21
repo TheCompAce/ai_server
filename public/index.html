@@ -75,6 +75,33 @@
     </form>
     <img id="variationResult" src="" alt="Image Variation" style="max-width: 500px; display: none;">
 
+    <!-- Form to test /image/inpaint endpoint -->
+    <h2>Inpainting Endpoint Test</h2>
+    <form id="inpaintForm" enctype="multipart/form-data">
+        Image: <input type="file" name="image" required placeholder="Select image">
+        Mask: <input type="file" id="mask" name="mask" required placeholder="Select mask">
+        <input type="text" name="prompt" placeholder="Enter inpainting prompt">
+        <!-- Hidden input for base64-encoded mask -->
+        <input type="hidden" id="base64Mask" name="mask">
+        <h2>Create Mask Over Image</h2>
+        <div>
+            <input type="file" id="uploadImage" accept="image/*">
+            <button id="makeMask">Make Mask</button>
+        </div>
+        <div>
+            Brush Size: <input type="range" id="brushSize" min="1" max="50" value="10">
+        </div>
+        <div id="maskInpaintContainer" style="position: relative; display: none;">
+            <canvas id="imageInpaint"></canvas>
+            <canvas id="maskInpaint" style="position: absolute; left: 0; top: 0;"></canvas>
+        </div>
+        <button id="setMask" style="display: none;">Set Mask</button>
+
+        
+        <button type="submit">Inpaint Image</button>
+    </form>
+    <img id="inpaintResult" src="" alt="Inpainted Image" style="max-width: 500px; display: none;">
+
 
     <!-- Form to test /image/detect endpoint -->
     <h2>Object Detection Endpoint Test</h2>
@@ -131,6 +158,20 @@
     </form>
     <audio id="generatedSpeech" controls style="display: none;"></audio>
 
+    <!-- Form to test /speak/parlor endpoint -->
+    <h2>Parler-TTS Speech Generation Endpoint Test</h2>
+    <form id="parlorSpeakForm">
+        <input type="text" name="prompt" placeholder="Enter prompt for speech generation" required>
+        <textarea name="description" placeholder="Enter description (e.g., voice characteristics)" required></textarea>
+        <li>Include the term "very clear audio" to generate the highest quality audio, and "very noisy audio" for high levels of background noise</li>
+        <li>Punctuation can be used to control the prosody of the generations, e.g. use commas to add small breaks in speech</li>
+        <li>The remaining speech features (gender, speaking rate, pitch and reverberation) can be controlled directly through the prompt</li>
+
+        <button type="submit">Generate Parler-TTS Speech</button>
+    </form>
+    <audio id="generatedParlorSpeech" controls style="display: none;"></audio>
+
+
     <!-- Form to test /hear endpoint -->
     <h2>Speech-to-Text Endpoint Test</h2>
     <form id="hearForm" enctype="multipart/form-data">
@@ -159,6 +200,7 @@
         <li><a href="/image">Image Endpoint</a> - POST</li>
         <li><a href="/image/variation">Image Variation Edpoint</a> - POST</li>
         <li><a href="/image/transform">Image Transorm Edpoint</a> - POST</li>
+        <li><a href="/image/inpaint">Image Inpaint Edpoint</a> - POST</li>
         <li><a href="/image/detect">Image Sketch Edpoint</a> - POST</li>
         <li><a href="/image/sketch">Object Detection Edpoint</a> - POST</li>        
         <li><a href="/image/depth">Depth Endpoint</a> - POST</li>
@@ -482,6 +524,168 @@
             })
             .catch(error => console.error('Error:', error)); // Log any errors to the console
         });
+
+        document.getElementById('inpaintForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent the default form submission
+            const formData = new FormData(this); // Create FormData from the form
+            fetch('/image/inpaint', { // Send the request to the Flask endpoint
+                method: 'POST',
+                body: formData, // FormData will be correctly processed without setting 'Content-Type' header
+            })
+            .then(response => response.blob()) // Convert response to Blob for image data
+            .then(blob => {
+                const imageUrl = URL.createObjectURL(blob); // Create a local URL for the blob
+                document.getElementById('inpaintResult').src = imageUrl; // Set the image source to the blob URL
+                document.getElementById('inpaintResult').style.display = 'block'; // Display the image
+            })
+            .catch(error => console.error('Error:', error)); // Handle any errors
+        });
+
+        const maskCanvas = document.getElementById('maskInpaint');
+        const ctxMask = maskInpaint.getContext('2d');
+        let painting = false;
+        let brushSize = document.getElementById('brushSize').value; // Initial brush size
+
+        // Update the brush size based on the range input's value
+        document.getElementById('brushSize').addEventListener('input', function() {
+            brushSize = this.value;
+        });
+
+        function startPosition(e) {
+            painting = true;
+            draw(e);
+            e.preventDefault(); // Prevent default to avoid drag and drop behavior
+        }
+
+        function finishedPosition() {
+            painting = false;
+            ctxMask.beginPath(); // Reset the path each time drawing is finished
+        }
+
+        function draw(e) {
+            if (!painting) return;
+
+            const rect = maskCanvas.getBoundingClientRect();
+            const scaleX = maskCanvas.width / rect.width;
+            const scaleY = maskCanvas.height / rect.height;
+
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            ctxMask.lineWidth = brushSize; // Use selected brush size
+            ctxMask.lineCap = 'round';
+            ctxMask.strokeStyle = 'rgba(255, 0, 0, 0.5)'; // Red color with 50% transparency
+
+            ctxMask.lineTo(x, y);
+            ctxMask.stroke();
+            ctxMask.beginPath();
+            ctxMask.moveTo(x, y);
+        }
+
+        maskCanvas.addEventListener('mousedown', startPosition);
+        maskCanvas.addEventListener('mouseup', finishedPosition);
+        maskCanvas.addEventListener('mousemove', draw);
+        maskCanvas.addEventListener('mouseout', finishedPosition); // Stop drawing when the mouse leaves the canvas
+
+        function dataURLtoBlob(dataurl) {
+            const arr = dataurl.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+
+            return new Blob([u8arr], {type: mime});
+        }
+
+
+        // Setting the mask data when the 'Set Mask' button is clicked
+        document.getElementById('setMask').addEventListener('click', function() {
+            const maskCanvas = document.getElementById('maskInpaint');
+            const maskData = maskCanvas.toDataURL('image/png'); // Get base64-encoded image of the mask
+            const maskBlob = dataURLtoBlob(maskData); // Convert to Blob
+
+            // Prepare FormData with the mask as a Blob
+            const formData = new FormData(document.getElementById('inpaintForm'));
+            formData.append('mask', maskBlob, 'mask.png'); // Append the mask image Blob as a file named 'mask.png'
+            formData.delete('image'); // Remove the original image file input from FormData if necessary
+            formData.append('image', document.getElementById('uploadImage').files[0]); // Re-append the image file to ensure it's included in FormData
+
+            // Make the fetch request to submit the form data
+            fetch('/image/inpaint', {
+                method: 'POST',
+                body: formData,
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                // Process the response
+                const imageUrl = URL.createObjectURL(blob);
+                document.getElementById('inpaintResult').src = imageUrl;
+                document.getElementById('inpaintResult').style.display = 'block';
+            })
+            .catch(error => console.error('Error:', error));
+
+            // Prevent default form submission if needed
+            event.preventDefault();
+        });
+
+
+        // Load and display the image to be masked
+        document.getElementById('makeMask').addEventListener('click', function() {
+            const imageInput = document.getElementById('uploadImage');
+            if (imageInput.files && imageInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        // Adjusting the size of the mask canvas to match the image
+                        maskCanvas.width = img.width;
+                        maskCanvas.height = img.height;
+
+                        const imageCanvas = document.getElementById('imageInpaint');
+                        imageCanvas.width = img.width;
+                        imageCanvas.height = img.height;
+                        const ctxImage = imageCanvas.getContext('2d');
+                        ctxImage.drawImage(img, 0, 0, img.width, img.height);
+
+                        document.getElementById('maskInpaintContainer').style.display = 'block';
+                        document.getElementById('setMask').style.display = 'inline';
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(imageInput.files[0]);
+            }
+        });
+
+        document.getElementById('parlorSpeakForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const prompt = this.prompt.value;
+            const description = this.description.value;
+            
+            // Create a JSON object with prompt and description
+            const data = JSON.stringify({ prompt: prompt, description: description });
+
+            fetch('/speak/parlor', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: data
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const speechUrl = URL.createObjectURL(blob);
+                const speechPlayer = document.getElementById('generatedParlorSpeech');
+                speechPlayer.src = speechUrl;
+                speechPlayer.style.display = 'block';
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+
 
     </script>
 </body>

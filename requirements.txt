@@ -12,8 +12,14 @@ datasets
 sentencepiece
 controlnet_aux
 safetensors
-flask
 werkzeug
 mediapipe
 openai
 peft
+mediapipe
+
+Flask
+Flask-Login
+flask-cors
+passlib
+werkzeug
