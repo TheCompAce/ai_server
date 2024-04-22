@@ -40,12 +40,25 @@ This project is a Flask-based server designed to handle multiple AI-related task
 
 The server exposes various endpoints for interacting with AI models:
 
-- **/vision**: Process images for various tasks.
-- **/ask** and **/ask/json**: Query a language model.
-- **/music**: Generate music from a prompt.
+- **Home**: Serves static files and the main test page.
+- **/vision**: Process a single image with a text prompt.
+- **/vision/multi**: Process multiple images with a text prompt.
+- **/ask**: Ask a question to a language model.
+- **/ask/json**: Query a language model with a JSON payload.
+- **/ask/embed**: Get embeddings from a language model.
+- **/music**: Generate music from a text prompt.
 - **/speak**: Convert text to speech.
-- **/hear**: Convert speech to text.
+- **/speak/voice**: Text-to-speech with predefined voices.
+- **/hear**: Convert audio to text.
 - **/image**: Generate images from text prompts.
+- **/image/variation**: Generate image variations.
+- **/image/transform**: Transform an image based on a prompt.
+- **/image/inpaint**: Inpaint an image with a given mask.
+- **/image/detect**: Detect objects in an image.
+- **/image/sketch**: Generate sketches from images.
+- **/image/depth**: Estimate depth in images.
+- **/image/removebg**: Remove background from images.
+- **/sound**: Generate sound effects from text prompts.
 
 ### Example Requests
 
