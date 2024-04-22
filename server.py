@@ -5,9 +5,8 @@ import signal
 
 from datetime import datetime
 import json
-from modules.ai_main import text_to_gif, text_to_image, image_to_depth, detect_image, variation_image, sketch_image, music_generate, text_to_speech, ask_llm, get_vision, ask_llm_json, speech_to_text, ask_llm_embed, text_to_sound, transform_image, inpaint_image, parlor_text_to_speech
+from modules.ai_main import text_to_gif, text_to_image, image_to_depth, detect_image, text_to_speech_voice, variation_image, sketch_image, music_generate, text_to_speech, ask_llm, get_vision, ask_llm_json, speech_to_text, ask_llm_embed, text_to_sound, transform_image, inpaint_image, parlor_text_to_speech, vision_with_prompt
 from modules.database import DatabaseManager
-
 
 from PIL import Image
 from flask import Flask, request, jsonify, send_from_directory, send_file
@@ -78,6 +77,34 @@ def vision():
     else:
         return jsonify({"error": "Invalid request"}), 400
 
+@app.route('/vision/multi', methods=['POST'])
+def vision_multi():
+    # Retrieve settings (assuming a function to get settings)
+    settings = get_settings()
+
+    # Extract the list of images from the POST request
+    image_files = request.files.getlist('images')  # Extract multiple image files
+    text_prompt = request.form.get('prompt', '')  # Get the text prompt
+
+    if not image_files or not text_prompt:
+        # If images or prompt is missing, return an error response
+        return jsonify({"error": "Missing images or text prompt"}), 400
+
+    # Convert the list of image files to PIL Images
+    images = []
+    for file in image_files:
+        try:
+            image = Image.open(file.stream)
+            images.append(image)
+        except Exception as e:
+            return jsonify({"error": f"Invalid image data: {str(e)}"}), 400
+
+    # Call the `vision_with_prompt` function with the images and text prompt
+    results = vision_with_prompt(images, text_prompt, settings)
+
+    # Return the results as a JSON response
+    return jsonify({"results": results})
+
 # Endpoint to process a question for the LLM
 @app.route('/ask', methods=['POST'])
 def ask():
@@ -121,11 +148,51 @@ def generate_music():
 @app.route('/speak', methods=['POST'])
 def speak():
     settings = get_settings()
-    data = request.json
-    text = data.get('prompt', '')
+    
+    # data = request.json
+    # print(data)
+    # text = data.get('prompt', '')
+    text = request.form['prompt']
     audio_io = text_to_speech(text, settings)
 
     return send_file(audio_io, mimetype='audio/mp3', as_attachment=True, download_name='generated_speech.mp3')
+
+# Define the new endpoint for text-to-speech with a specified voice
+@app.route('/speak/voice', methods=['POST'])
+def speak_voice():
+    settings = get_settings()
+    
+    if 'prompt' not in request.form:
+        return jsonify({"error": "No prompt provided"}), 400  # Return an error if no prompt
+    
+    text = request.form['prompt']  # Get the prompt text from the form data
+    voice_preset = request.form.get('voice', None)  # Get the optional voice preset
+    
+    # Use the text_to_speech_voice function with the optional voice preset
+    audio_io = text_to_speech_voice(text, voice_preset, settings)
+    
+    return send_file(
+        audio_io,
+        mimetype='audio/wav',
+        as_attachment=True,
+        download_name='generated_speech_with_voice.mp3'
+    )
+
+# Endpoint to get the list of available voices from bark_voices.json@app.route('/speak/voices', methods=['GET'])
+@app.route('/speak/voices', methods=['GET'])
+def get_voices():
+    # Path to the JSON file containing voices data
+    json_path = "bark_voices.json"
+
+    if not os.path.exists(json_path):
+        return jsonify({"error": "Voices file not found"}), 404  # Handle missing file
+
+    # Read the JSON file and extract voice data
+    with open(json_path, 'r') as file:
+        data = json.load(file)
+
+    voices = data.get("voices", [])  # Extract the list of voices
+    return jsonify({"voices": voices})  # Return the voices as a JSON response
 
 @app.route('/speak/parlor', methods=['POST'])
 def speak_parlor():

@@ -1,0 +1,14 @@
+{
+    "voices": [
+        {"path": "v2/en_speaker_0", "lang": "English", "sex": "Male"},
+        {"path": "v2/en_speaker_1", "lang": "English", "sex": "Male"},
+        {"path": "v2/en_speaker_2", "lang": "English", "sex": "Male"},
+        {"path": "v2/en_speaker_3", "lang": "English", "sex": "Male"},
+        {"path": "v2/en_speaker_4", "lang": "English", "sex": "Male"},
+        {"path": "v2/en_speaker_5", "lang": "English", "sex": "Male"},
+        {"path": "v2/en_speaker_6", "lang": "English", "sex": "Male"},
+        {"path": "v2/en_speaker_7", "lang": "English", "sex": "Male"},
+        {"path": "v2/en_speaker_8", "lang": "English", "sex": "Male"},
+        {"path": "v2/en_speaker_9", "lang": "English", "sex": "Female"}
+    ]
+}

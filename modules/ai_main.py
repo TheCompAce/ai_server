@@ -22,6 +22,8 @@ from modules.ai import proteus
 from modules.ai import audioldm
 from modules.ai import parlertts
 from modules.ai import llama3
+from modules.ai import bark
+from modules.ai import Idefics2
 from modules.cache import Cache
 
 
@@ -162,10 +164,22 @@ def text_to_speech(prompt, settings = {}):
     
     if (settings.get("use_speecht5", True) == True):
         reval = speecht5_tts.speak(prompt)
+    elif (settings.get("use_bark", True) == True):
+        reval = bark.speak(prompt)        
     else:
         reval = openai.speak(prompt)
 
     set_cache(settings, ("tts", prompt), reval, True)
+    return reval
+
+def text_to_speech_voice(prompt, voice, settings = {}):
+    cache_val = check_cache(settings, ("tts_v", prompt))
+    if (cache_val!= None):
+        return cache_val
+    
+    reval = bark.speak(prompt, voice)
+    
+    set_cache(settings, ("tts_v", prompt), reval, True)
     return reval
 
 def parlor_text_to_speech(prompt, description, settings = {}):
@@ -215,6 +229,21 @@ def get_vision(image, prompt, settings = {}):
         
     set_cache(settings, ("vis", (image, prompt)), reval, False)
     return reval
+
+# Function to process images with a text prompt using Idefics2
+def vision_with_prompt(image_inputs, text_prompt, settings={}):
+    # Check if the output is cached
+    cache_val = check_cache(settings, ("idefics", (image_inputs, text_prompt)))
+    if (cache_val!= None):
+        return cache_val
+    
+    # Call the function from idefics2.py
+    results = Idefics2.process_images_with_prompt(image_inputs, text_prompt)
+
+    # Cache the results if caching is enabled
+    set_cache(settings, ("idefics", (image_inputs, text_prompt)), results, False)
+
+    return results
 
 def speech_to_text(audio, settings = {}):
     cache_val = check_cache(settings, ("stt", audio))

@@ -22,6 +22,7 @@ if not exist env (
     pip install git+https://github.com/kashif/diffusers.git@wuerstchen-v3
 
     pip install git+https://github.com/huggingface/parler-tts.git
+    pip install git+https://github.com/suno-ai/bark.git
     
     REM python -m spacy download en_core_web_sm
     REM pip install git+https://github.com/suno-ai/bark.git

@@ -18,6 +18,16 @@
     </form>
     <div id="visionResult"></div>
 
+    <!-- Form to test /vision/multi endpoint -->
+    <h2>Multi-Image Vision Endpoint</h2>
+    <form id="visionMultiForm" enctype="multipart/form-data">
+        <input type="file" name="images" multiple required>
+        <input type="text" name="prompt" placeholder="Enter text prompt">
+        <button type="submit">Submit</button>
+    </form>
+    <div id="visionMultiResult"></div>
+
+
     <!-- Form to test /ask endpoint -->
     <h2>Ask Endpoint Test</h2>
     <form id="askForm">
@@ -158,6 +168,18 @@
     </form>
     <audio id="generatedSpeech" controls style="display: none;"></audio>
 
+    <!-- Form to test /speak/voice endpoint -->
+    <h2>Text-to-Speech with Voice Selection</h2>
+    <form id="speakVoiceForm">
+        <input type="text" name="prompt" placeholder="Enter prompt for speech generation" required>
+        <select id="voiceSelect" name="voice">
+            <option value="">Select a voice</option> <!-- Default option -->
+        </select>
+        <button type="submit">Generate Speech with Voice</button>
+    </form>
+    <audio id="generatedSpeechWithVoice" controls style="display: none;"></audio>
+
+
     <!-- Form to test /speak/parlor endpoint -->
     <h2>Parler-TTS Speech Generation Endpoint Test</h2>
     <form id="parlorSpeakForm">
@@ -194,6 +216,7 @@
     <ul>
         <li><a href="/">Home (Static files)</a></li>
         <li><a href="/vision">Vision Endpoint</a> - POST</li>
+        <li><a href="/vision">Multi-Image Vision Endpoint</a> - POST</li>
         <li><a href="/ask">Ask Endpoint</a> - POST</li>
         <li><a href="/ask/json">Ask JSON Endpoint</a> - POST</li>
         <li><a href="/ask/embed">Ask Embeddings Endpoint</a> - POST</li>
@@ -207,11 +230,67 @@
         <li><a href="/image/removebg">Remove Background</a> - POST</li>
         <li><a href="/sound">Sound Effect Endpoint</a> - POST</li>
         <li><a href="/speak">Speak Endpoint</a> - POST</li>
+        <li><a href="/speak/voice">Speak Endpoint with predifend voices. - POST</a> - POST</li>
         <li><a href="/hear">Speach To Text Endpoint</a> - POST</li>
         <li><a href="/music">Music Endpoint</a> - POST</li>
     </ul>
 
     <script>
+        // Function to populate the voices select box
+        function populateVoices() {
+            fetch('/speak/voices', {
+                method: 'GET',
+            })
+            .then(response => response.json())
+            .then(data => {
+                const voiceSelect = document.getElementById('voiceSelect');
+                const voices = data.voices; // Get the list of voices
+
+                // Clear any existing options
+                voiceSelect.innerHTML = '<option value="">Select a voice</option>'; // Default option
+
+                // Populate the select box with voice details (path, language, gender)
+                voices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = voice.path; // Use the voice path for the value
+                    option.textContent = `${voice.path} - ${voice.lang} (${voice.sex})`; // Display with language and gender
+                    voiceSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching voices:', error)); // Handle any errors
+        }
+
+        // Call the function to populate the voices when the page loads
+        document.addEventListener('DOMContentLoaded', populateVoices);
+
+        // Handle the submission of the form to generate speech with a selected voice
+        document.getElementById('speakVoiceForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent the default form submission behavior
+
+            const prompt = this.prompt.value; // Get the prompt value
+            const voice = this.voice.value; // Get the selected voice
+            
+            const formData = new URLSearchParams(); // Use URLSearchParams for form data
+            formData.append('prompt', prompt);
+            formData.append('voice', voice);
+
+            fetch('/speak/voice', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded', // Use URL encoding for form submission
+                },
+                body: formData.toString(), // Convert to a query string
+            })
+            .then(response => response.blob()) // Convert the response to a Blob object
+            .then(blob => {
+                const speechUrl = URL.createObjectURL(blob); // Create a local URL for the blob
+                const speechPlayer = document.getElementById('generatedSpeechWithVoice');
+                speechPlayer.src = speechUrl; // Set the source of the audio player to the blob URL
+                speechPlayer.style.display = 'block'; // Make the audio player visible
+            })
+            .catch(error => console.error('Error generating speech:', error)); // Handle any errors
+        });
+
         document.getElementById('visionForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
@@ -223,6 +302,22 @@
             .then(data => {
                 document.getElementById('visionResult').innerText = JSON.stringify(data);
             });
+        });
+
+        document.getElementById('visionMultiForm').addEventListener('submit', function(e) {
+            e.preventDefault();  // Prevent the default form submission behavior
+
+            const formData = new FormData(this);  // Create FormData from the form
+            fetch('/vision/multi', {  // Send a POST request to the endpoint
+                method: 'POST',
+                body: formData  // Send the form data
+            })
+            .then(response => response.json())  // Expect JSON in response
+            .then(data => {
+                // Display the result in the visionMultiResult div
+                document.getElementById('visionMultiResult').innerText = JSON.stringify(data);
+            })
+            .catch(error => console.error('Error:', error));  // Handle errors
         });
 
         document.getElementById('askJSONForm').addEventListener('submit', function(e) {
