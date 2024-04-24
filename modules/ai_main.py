@@ -14,6 +14,7 @@ from modules.ai import sd_inpaint
 from modules.ai import musicgen
 from modules.ai import speecht5_tts
 from modules.ai import tinyllama
+from modules.ai import phi3
 from modules.ai import moondream1
 from modules.ai import whisper
 from modules.ai import nomic
@@ -201,6 +202,8 @@ def ask_llm(system, user, settings):
         reval = tinyllama.ask_tinyllama(system, user)
     elif (settings.get("use_llama3", True) == True):
         reval = llama3.ask_llama3(system, user)
+    elif (settings.get("use_phi3", True) == True):
+        reval = phi3.ask_phi3(system, user)
     else:
         reval = openai.ask(system, user, settings)
         

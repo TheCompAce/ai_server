@@ -40,7 +40,7 @@ def process_images_with_prompt(image_inputs, text_prompt):
     # Initialize the Idefics2 processor and model
     processor = AutoProcessor.from_pretrained("HuggingFaceM4/idefics2-8b-base")
     model = AutoModelForVision2Seq.from_pretrained(
-        "HuggingFaceM4/idefics2-8b-base",
+        "HuggingFaceM4/idefics2-8b-base"
     ).to(DEVICE)
 
 
@@ -49,9 +49,10 @@ def process_images_with_prompt(image_inputs, text_prompt):
 
     # Prepare the inputs for the model
     inputs = processor(images=images, text=text_prompt, return_tensors="pt").to(DEVICE)
+    
 
     # Generate outputs from the model
-    outputs = model.generate(**inputs)
+    outputs = model.generate(**inputs, do_sample=True, max_length=2048)
 
     # Convert the output tensor to text
     decoded_texts = processor.batch_decode(outputs, skip_special_tokens=True)
