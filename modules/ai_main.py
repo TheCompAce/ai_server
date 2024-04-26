@@ -200,12 +200,13 @@ def ask_llm(system, user, settings):
     
     if (settings.get("use_tinyllama", True) == True):
         reval = tinyllama.ask_tinyllama(system, user)
-    elif (settings.get("use_llama3", True) == True):
+    elif (settings.get("use_llama3", False) == True):
         reval = llama3.ask_llama3(system, user)
-    elif (settings.get("use_phi3", True) == True):
+    elif (settings.get("use_phi3", False) == True):
         reval = phi3.ask_phi3(system, user)
     else:
         reval = openai.ask(system, user, settings)
+        
         
     set_cache(settings, ("llm", (system, user)), reval, True)
     return reval

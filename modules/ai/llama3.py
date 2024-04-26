@@ -4,13 +4,21 @@ import transformers
 # Function to generate text with a pirate chatbot style
 def ask_llama3(system_content, user_content):
     # Model ID for the Meta-Llama-3-8B-Instruct model
-    model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+    # model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+    model_id = "Orenguteng/Llama-3-8B-Lexi-Uncensored"
+    
 
     # Initialize the text-generation pipeline with appropriate device and data type
+    # pipeline = transformers.pipeline(
+    #     "text-generation",
+    #     model=model_id,
+    #     model_kwargs={"torch_dtype": torch.bfloat16},
+    #     device="auto",
+    # )
+
     pipeline = transformers.pipeline(
         "text-generation",
         model=model_id,
-        model_kwargs={"torch_dtype": torch.bfloat16},
         device="auto",
     )
 
